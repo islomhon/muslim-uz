@@ -35,24 +35,32 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   flutter_launcher_icons: ^0.14.2
-
+  
+  http: ^1.2.2
+  url_launcher: ^6.3.1
+  flutter_neumorphic: ^3.2.0
+  flutter_neumorphic_plus: ^3.4.0
+  shared_preferences: ^2.3.3
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
   image_path: "assets/boy.jpg"
-  min_sdk_android: 21 # android min sdk min:16, default 21
+  min_sdk_android: 21
   web:
     generate: true
     image_path: "assets/boy.jpg"
-    background_color: "#hexcode"
-    theme_color: "#hexcode"
+    background_color: "#FFFFFF" # Oq rang
+    theme_color: "#000000" # Qora rang
   windows:
     generate: true
     image_path: "assets/boy.jpg"
-    icon_size: 48 # min:48, max:256, default: 48
+    icon_size: 128
   macos:
     generate: true
     image_path: "assets/boy.jpg"
+  adaptive_icon_background: "#ffffff"
+  adaptive_icon_foreground: "assets/boy.jpg"
+
 
 dev_dependencies:
   flutter_test:
