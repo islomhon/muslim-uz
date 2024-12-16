@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_launcher_icons/xml_templates.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:muslim_uz/tasbeh.dart';
@@ -22,52 +21,68 @@ class _HomepageState extends State<Homepage> {
     fetchPrayerTimes();
   }
 
+
   Future<void> fetchPrayerTimes() async {
     try {
+      // Yangi API manzili va parametrlari
       final response = await http.get(
-          Uri.parse('https://islomapi.uz/api/present/day?region=qo%27qon'));
+        Uri.parse(
+            'https://api.aladhan.com/v1/timingsByCity?city=Kokand&country=Uzbekistan&method=2'),
+      );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
 
-        // API'dan olingan namoz vaqtlarini
-        final timings = {
-          "Tong": data['times']['tong_saharlik'],
-          "Bomdod": data['times']['quyosh'],
-          "Peshin": data['times']['peshin'],
-          "Asr": data['times']['asr'],
-          "Shom": data['times']['shom_iftor'],
-          "Hufton": data['times']['hufton']
+        // API'dan vaqtlarni olish
+        final timings = data['data']['timings'];
+
+        final prayerTimes = {
+          "Bomdod": timings['Fajr'],
+          "Quyosh": timings['Sunrise'],
+          "Peshin": timings['Dhuhr'],
+          "Asr": timings['Asr'],
+          "Shom": timings['Maghrib'],
+          "Hufton": timings['Isha'],
         };
 
-        // Hozirgi vaqtni hisoblash
         final now = DateTime.now();
         String? nextPrayer;
         String? nextPrayerTime;
 
-        timings.forEach((prayer, time) {
+        for (var entry in prayerTimes.entries) {
+          final prayer = entry.key;
+          final time = entry.value;
+
+          if (time == null || time.isEmpty) continue;
+
+          // Namoz vaqtini DateTime formatiga aylantirish
           final prayerTime = DateTime.parse(
-              "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}T$time:00");
-          if (now.isBefore(prayerTime) && nextPrayer == null) {
+            "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}T$time:00",
+          );
+
+          if (now.isBefore(prayerTime)) {
             nextPrayer = prayer;
             nextPrayerTime = time;
+            break;
           }
-        });
+        }
 
         setState(() {
           currentPrayer = nextPrayer ?? "Kun tugadi";
           currentPrayerTime = nextPrayerTime ?? "00:00";
         });
       } else {
-        throw Exception("Ma'lumotlarni yuklashda xatolik yuz berdi");
+        throw Exception("HTTP xatosi: ${response.statusCode}");
       }
     } catch (e) {
+      debugPrint("Xatolik: $e");
       setState(() {
         currentPrayer = "Xatolik";
         currentPrayerTime = "Xatolik";
       });
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -117,9 +132,7 @@ class _HomepageState extends State<Homepage> {
                         ],
                       ),
                     ),
-                    SizedBox(
-                      height: 40,
-                    ),
+                    SizedBox(height: 40),
                     Container(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
@@ -138,9 +151,7 @@ class _HomepageState extends State<Homepage> {
                                           Icons.av_timer_outlined,
                                           color: Colors.amber,
                                         ),
-                                        SizedBox(
-                                          width: 5,
-                                        ),
+                                        SizedBox(width: 5),
                                         Text(
                                           currentPrayer,
                                           style: TextStyle(
@@ -167,9 +178,7 @@ class _HomepageState extends State<Homepage> {
                                           Icons.location_on_outlined,
                                           color: Colors.amber,
                                         ),
-                                        SizedBox(
-                                          width: 5,
-                                        ),
+                                        SizedBox(width: 5),
                                         Text(
                                           "Qo'qon",
                                           style: TextStyle(
@@ -189,15 +198,9 @@ class _HomepageState extends State<Homepage> {
                                 ),
                               ],
                             ),
-                            SizedBox(
-                              height: 5,
-                            ),
-                            Divider(
-                              color: Colors.black,
-                            ),
-                            SizedBox(
-                              height: 10,
-                            ),
+                            SizedBox(height: 5),
+                            Divider(color: Colors.black),
+                            SizedBox(height: 10),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
@@ -245,13 +248,17 @@ class _HomepageState extends State<Homepage> {
                                       "Al-Qur`an",
                                       style: TextStyle(fontSize: 12),
                                     )
-                                  ],  
+                                  ],
                                 ),
                                 Column(
                                   children: [
                                     InkWell(
-                                      onTap: (){
-                                        Navigator.push(context, MaterialPageRoute(builder: (context)=> TasbehScreen()));
+                                      onTap: () {
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    TasbehScreen()));
                                       },
                                       child: Container(
                                         width: 45,
@@ -314,9 +321,7 @@ class _HomepageState extends State<Homepage> {
                         borderRadius: BorderRadius.circular(30),
                       ),
                     ),
-                    SizedBox(
-                      height: 25,
-                    ),
+                    SizedBox(height: 25),
                     Container(
                       width: double.infinity,
                       height: 80,
@@ -339,9 +344,7 @@ class _HomepageState extends State<Homepage> {
                                     bottomLeft: Radius.circular(15),
                                   )),
                             ),
-                            SizedBox(
-                              width: 10,
-                            ),
+                            SizedBox(width: 10),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -376,9 +379,7 @@ class _HomepageState extends State<Homepage> {
                           color: Colors.teal,
                           borderRadius: BorderRadius.circular(25)),
                     ),
-                    SizedBox(
-                      height: 20,
-                    ),
+                    SizedBox(height: 20),
                     Row(
                       children: [
                         Text(
@@ -399,7 +400,7 @@ class _HomepageState extends State<Homepage> {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               duration: Duration(seconds: 2),
-                              content: Text("usbu urlni ochib bolmadi!"),
+                              content: Text("Ushbu URLni ochib bo'lmadi!"),
                             ),
                           );
                         }
